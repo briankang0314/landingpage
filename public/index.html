@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예약 주문 - 불교조계종</title>
+    <style>
+        /* General body styling */
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #f4f4f4;
+        }
+
+        header, footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 1em 0;
+            width: 100%;
+        }
+
+        #product-details {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .product-image-container img, .product-description-container img {
+            width: 100%;
+            max-width: 600px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .product-description-container p {
+            margin: 0 auto;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        #order-form form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px #ccc;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>불교조계종</h1>
+    </header>
+    <section id="product-details">
+        <div class="product-image-container">
+            <img id="product-image" src="images/jangsam.png" alt="제품 이미지" style="display: none;">
+        </div> 
+        <div class="product-description-container">
+            <p id="product-description"></p>
+            <img id="product-desc-image" src="images/jangsam_details.png" alt="제품 상세 정보 이미지" style="display: none;">
+        </div>
+    </section>
+    <section id="order-form">
+        <form action="http://localhost:3000/submit-form" method="post">
+            <label for="name">성함 (필수):</label>
+            <input type="text" id="name" name="name" placeholder="성함" required>
+
+            <label for="gender">성별 (필수):</label>
+            <select id="gender" name="gender">
+                <option value="male">남자</option>
+                <option value="female">여자</option>
+            </select>
+
+            <label for="age">나이 (필수):</label>
+            <input type="number" id="age" name="age" placeholder="나이" required>
+
+            <label for="affiliation">소속 (필수):</label>
+            <input type="text" id="affiliation" name="affiliation" placeholder="소속" required>
+
+            <label for="size">사이즈 (필수):</label>
+            <select id="size" name="size">
+                <option value="XS">XS</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+                <option value="XL">XL</option>
+            </select>
+
+            <label for="email">이메일 (선택):</label>
+            <input type="email" id="email" name="email" placeholder="이메일">
+
+            <label for="phone">전화번호 (필수):</label>
+            <input type="tel" id="phone" name="phone" placeholder="전화번호" required>
+
+            <button type="submit">지금 예약하기</button>
+        </form>
+        <div id="success-notification" style="display: none; color: green;">사전예약 주문이 성공적으로 제출되었습니다!</div>
+    </section>
+    <footer>
+        <p>연락처: visionpjt@ononcompany.com</p>
+    </footer>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.querySelector('form');
+            const productImageSrc = "images/jangsam.png"; // Path to your image
+            const productDescriptionText = "Your product description here.";
+            const productDescImageSrc = "images/jangsam_details.png"; // Path to additional description image
+
+            const productImage = document.getElementById('product-image');
+            const productDescription = document.getElementById('product-description');
+            const productDescImage = document.getElementById('product-desc-image'); // Additional image in description
+
+            if (productImageSrc) {
+                productImage.src = productImageSrc;
+                productImage.style.display = 'block';
+            }
+
+            if (productDescriptionText) {
+                productDescription.textContent = productDescriptionText;
+            }
+
+            if (productDescImageSrc) {
+                productDescImage.src = productDescImageSrc;
+                productDescImage.style.display = 'block'; // Display the image if source is provided
+                productDescImage.alt = "Detailed Description Image"; // Set an appropriate alt text
+            }
+
+            // Validation functions
+            function validateName() {
+                const name = document.querySelector('input[name="name"]');
+                if (name.value.trim() === '') {
+                    name.style.borderColor = 'red';
+                    return false;
+                } else {
+                    name.style.borderColor = 'green';
+                    return true;
+                }
+            }
+
+            function validateAge() {
+                const age = document.querySelector('input[name="age"]');
+                if (age.value <= 0 || isNaN(age.value)) {
+                    age.style.borderColor = 'red';
+                    return false;
+                } else {
+                    age.style.borderColor = 'green';
+                    return true;
+                }
+            }
+
+            function validateEmail() {
+                const email = document.querySelector('input[name="email"]');
+                if (email.value.trim() === '') {
+                    email.style.borderColor = 'initial'; // Reset to default border color
+                    return true; // Valid since it's optional
+                }
+                const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+                if (!regex.test(email.value)) {
+                    email.style.borderColor = 'red';
+                    return false;
+                } else {
+                    email.style.borderColor = 'green';
+                    return true;
+                }
+            }
+
+            function validatePhone() {
+                const phone = document.querySelector('input[name="phone"]');
+                // Regex to match Korean phone number format xxx-xxxx-xxxx
+                const regex = /^\d{3}-\d{4}-\d{4}$/;
+
+                if (!regex.test(phone.value)) {
+                    phone.style.borderColor = 'red';
+                    return false;
+                } else {
+                    phone.style.borderColor = 'green';
+                    return true;
+                }
+            }
+
+            // Event listeners for real-time validation
+            document.querySelector('input[name="name"]').addEventListener('blur', validateName);
+            document.querySelector('input[name="age"]').addEventListener('blur', validateAge);
+            document.querySelector('input[name="email"]').addEventListener('blur', validateEmail);
+            document.querySelector('input[name="phone"]').addEventListener('blur', validatePhone);
+
+            // Form submission event
+            form.addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                if (!validateName() || !validateAge() || !validateEmail() || !validatePhone()) {
+                    event.preventDefault(); // Stop form submission
+                    alert('양식의 오류를 수정해 주십시오.');
+                } else {
+                    // Submit the form via AJAX
+                    fetch('/submit-form', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: document.getElementById('name').value,
+                            gender: document.getElementById('gender').value,
+                            age: document.getElementById('age').value,
+                            affiliation: document.getElementById('affiliation').value,
+                            size: document.getElementById('size').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('phone').value
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            const successMessage = document.getElementById('success-notification');
+                            successMessage.style.display = 'block';
+                            setTimeout(() => {
+                                successMessage.style.display = 'none';
+                            }, 2000); // Hide the success message after 2 seconds
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error submitting form');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
